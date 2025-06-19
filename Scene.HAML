@@ -1,0 +1,48 @@
+.scene
+  .sky
+    .sun
+    .cloud.cloud-1
+      .blob
+      .blob
+      .blob
+    .cloud.cloud-2
+      .blob
+      .blob
+      .blob
+    .cloud.cloud-3
+      .blob
+      .blob
+      .blob
+
+  .ground
+
+  .background
+    .pixel-tree.tree-left
+    .pixel-tree.tree-right
+    .pixel-tree.tree-back-left
+    .pixel-tree.tree-back-right
+
+    .pixel-character.character-left
+    .pixel-character.character-right
+
+    .flowers
+      - (1..24).each do |i|
+        - size = (i % 3 == 0) ? 'tiny' : (i % 4 == 0) ? 'big' : 'regular'
+        - color = %w[pink yellow lavender][i % 3]
+        .flower{:class => "f#{i} #{size} #{color}"}
+
+  .birds
+    - (1..10).each do |i|
+      .bird{:class => "b#{i}"}
+
+  .falling-petals
+    - (1..36).each do |i|
+      .petal-fall{:class => "p#{i}"}
+
+  .sparkles
+    - (1..10).each do |i|
+      .sparkle{:class => "s#{i}"}
+
+  .footer-text
+    %p Made with ♥ by Mahdy Gribkov for the Spring Banner Challenge 🌸🏆
+
