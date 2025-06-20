@@ -1,0 +1,91 @@
+!!!
+%html(lang="en")
+  %head
+    %meta(charset="UTF-8")
+    %meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    %title Spring Blossom Scene - Competition Project
+    %meta(name="description" content="A magical, living Spring Blossom scene with advanced CSS animations and interactions")
+    %link(rel="stylesheet" href="style.css")
+    
+  %body
+    .scene-container
+      .scene(role="main" aria-label="Spring Blossom Scene")
+        
+        / Dynamic Background
+        .sky-layer
+          .sky-gradient
+          .moon
+          .stars
+            - 20.times do
+              .star
+          .clouds
+            - 6.times do |i|
+              .cloud{:class => "cloud-#{i+1}"}
+                .puff-1
+                .puff-2
+                .puff-3
+          .sun
+                
+        / Parallax Layers
+        .parallax-layer.layer-1
+          .mountain.mountain-1
+          .mountain.mountain-2
+        
+        .parallax-layer.layer-2
+          - 3.times do |i|
+            .tree.tree--far{:class => "tree-#{i+1}"}
+              .trunk
+              .leaves
+        
+        .parallax-layer.layer-3
+          - 2.times do |i|
+            .tree.tree--mid{:class => "tree-#{i+4}"}
+              .trunk
+              .leaves
+              
+        .parallax-layer.layer-4
+          .ground
+          - 5.times do |i|
+            .tree.tree--near{:class => "tree-#{i+6}"}
+              .trunk
+              .leaves
+              
+        / Bird System
+        .bird-system
+          - 8.times do |i|
+            .bird.bird--sparrow{:class => "bird-#{i+1}"}
+          - 6.times do |i|
+            .bird.bird--robin{:class => "bird-#{i+9}"}
+          - 5.times do |i|
+            .bird.bird--jay{:class => "bird-#{i+15}"}
+
+        / Petal System
+        .petal-system
+          - 60.times do
+            .petal
+              
+      / UI and Info Panels
+      .scene-info
+        %h2 🌸 Spring Blossom Symphony
+        %p An intricately crafted pixel environment brought to life with responsive HAML structure and layered SCSS animations.
+        %h3 What to Notice:
+        %ul
+          %li Advanced parallax system for immersive depth.
+          %li Procedural flocking behavior with randomized, infinite flight paths.
+          %li Dynamic atmospheric perspective using CSS filters and transforms.
+          %li Fully responsive design from mobile to ultra-wide displays.
+        
+      / Loading Screen
+      .loading-screen
+        .loading-spinner
+        %h3 Loading Spring Blossom Scene...
+        %p Preparing magical animations...
+
+    %footer.site-footer
+      %p
+        Handcrafted with ❤️ by Mahdy Gribkov • 
+        %span.hebrew של מפתחים מחוץ לקופסה CSS תחרות 🪁
+
+    / Hidden elements for screen readers
+    .sr-only{"aria-live" => "polite"}
+      %p Spring Blossom scene loaded. Use keyboard navigation to explore the interactive elements.

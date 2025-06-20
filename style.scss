@@ -1,492 +1,622 @@
-// =============================
-//  SCSS – Mahdy's Blossom Scene 🌸
-// =============================
+/*
+  Spring Blossom Scene - Competition SCSS Overhaul
+  - Project by Mahdy Gribkov
+  - A demonstration of advanced, CSS-only animation techniques.
+  - Features a responsive layout, procedural animations, and a multi-layered parallax system.
+*/
 
-// === COLORS ===
-$bg: #fef6f9;
-$sky-top: #fbe9f1;
-$sky-bottom: #f8d7e5;
-$cloud: rgba(255, 255, 255, 0.95);
-$sun: #fff6cc;
-$petal: #f9c4d2;
-$edge: #f3a6b8;
-$core: #f48ca3;
-$tree-bark: #8b5e3c;
-$tree-leaf: #74c69d;
-$character: #222;
-$flower: #f56fa2;
-$stem: #4caf50;
-$sparkle: #fff3f8;
+// =============================================================================
+// SASS HELPERS & CONFIG
+// =============================================================================
 
-// === RESET ===
+@use "sass:math";
+
+// A utility function to generate a random number within a given range.
+// This is used to create natural-looking variations in animations.
+@function random-range($min, $max) {
+  @return $min + math.random() * ($max - $min);
+}
+
+// =============================================================================
+// CSS CUSTOM PROPERTIES (THEME & CONFIG)
+// =============================================================================
+
+:root {
+  // Scene Colors - A soft, sakura-inspired palette.
+  --sky-top: #b4c6e7;
+  --sky-bottom: #fbc2eb;
+  --sun-core: #fffde4;
+  --sun-glow: rgba(255, 197, 143, 0.6);
+  --mountain-color: #a3b1b7;
+  --tree-trunk: #6f5f56;
+  --tree-leaves: #8fbc8f;
+  --ground-color: #98c9a3;
+  --petal-color: #ffb3de;
+  --scene-overlay-top: rgba(255, 182, 193, 0.1);
+  --scene-overlay-bottom: rgba(230, 230, 250, 0.1);
+  --footer-bg: #DE3163; // User-specified magenta
+  --footer-text: #ffffff;
+
+  // Bird Colors
+  --sparrow-color: #9b7653;
+  --robin-color: #c95c3d;
+  --jay-color: #5d73b0;
+
+  // Animation Timing
+  --parallax-speed: 120s;
+  --bird-flap-speed: 0.4s;
+  --petal-fall-duration: 15s;
+}
+
+// =============================================================================
+// BASE & RESET
+// =============================================================================
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-body {
-  background: $bg;
-  font-family: 'Courier New', monospace;
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'Helvetica Neue', sans-serif;
+  background: var(--sky-top);
+}
+
+.scene-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  perspective: 800px;
+  perspective-origin: center;
+}
+
+.scene {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+// =============================================================================
+// LOADING SCREEN
+// =============================================================================
+
+.loading-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+    width: 100%;
+    height: 100%;
+  background: white;
+  z-index: 100;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  overflow: hidden;
+  animation: hide-loader 1s ease-out 2s forwards;
+
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f0f0f0;
+    border-top-color: var(--petal-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  
+  h3 { color: #333; margin-bottom: 10px; }
+  p { color: #666; }
 }
 
-// === SCENE BASE ===
-.scene {
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes hide-loader {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+// =============================================================================
+// UI - SCENE INFO & FOOTER
+// =============================================================================
+
+.scene-info {
+    position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(5px);
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  z-index: 50;
+  max-width: 300px;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+
+  h2 { font-size: 1.2em; color: #333; margin-bottom: 10px; }
+  h3 { font-size: 1em; color: #555; margin-bottom: 8px; margin-top: 10px; }
+  p { font-size: 0.9em; line-height: 1.4; color: #666; }
+  ul { list-style: none; padding-left: 15px; }
+  li { font-size: 0.9em; margin-bottom: 5px; color: #666; position: relative; }
+  li::before {
+    content: '🌸';
   position: absolute;
-  width: 100vw;
-  height: 100vh;
-  background: $bg;
-  z-index: 1;
+    left: -20px;
+    top: 0;
+  }
 }
 
-// === SKY + SUN + CLOUDS ===
-.sky {
+.site-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+    width: 100%;
+  padding: 10px;
+  text-align: center;
+  z-index: 50;
+  background: var(--footer-bg);
+  color: var(--footer-text);
+  opacity: 0; // Start hidden
+  animation: fade-in-footer 1s ease-out 2s forwards; // Sync with loader
+  
+  .hebrew {
+    direction: rtl;
+    unicode-bidi: bidi-override;
+  }
+}
+
+@keyframes fade-in-footer {
+  to {
+    opacity: 1;
+  }
+}
+
+
+// =============================================================================
+// SCENE BACKGROUND & STATIC ELEMENTS
+// =============================================================================
+
+// The sky layer sits at the very back of the 3D scene.
+.sky-layer {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    #cce7ff 0%,        // very light sky blue top
-    #b2ddf7 20%,       // cooler sky
-    #d5def6 35%,       // transition blue-violet
-    #f2d8e8 50%,       // pastel haze zone
-    #fbe9f1 65%,       // warm soft pink
-    #f6d4e1 80%,       // melting into ground tone
-    #f1d0d9 100%       // fixed ground match
-  );
-  z-index: -3;
+  z-index: 1;
+  
+  .sky-gradient {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+  }
 
+  // A completely redesigned, non-geometric sun with multiple layers and animations.
   .sun {
-    position: absolute;
-    top: 5%;
-    right: 10%;
-    width: 60px;
-    height: 60px;
-    background: $sun;
+  position: absolute;
+    top: 10%;
+    right: 15%;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, var(--sun-core) 30%, transparent 60%);
     border-radius: 50%;
-    box-shadow:
-      0 0 40px rgba(255, 250, 200, 0.6),
-      0 0 80px rgba(255, 250, 200, 0.3);
-    z-index: 3;
-  }
-
-  .cloud {
-    position: absolute;
+    animation: sun-pulse 12s infinite ease-in-out;
+    transition: transform 0.5s ease;
     z-index: 2;
-
-    .blob {
-      position: absolute;
-      background: #ffffff;
-      border-radius: 50%;
-      filter: blur(10px);
-      opacity: 0.85;
-      mix-blend-mode: screen;
+    
+    &:hover {
+      transform: scale(1.1);
     }
-
-    &.cloud-1 {
-      top: 10%;
-      left: 5%;
-      .blob:nth-child(1) { width: 60px; height: 40px; top: 0; left: 0; }
-      .blob:nth-child(2) { width: 80px; height: 50px; top: -10px; left: 30px; }
-      .blob:nth-child(3) { width: 50px; height: 30px; top: 5px; left: 70px; }
-      animation: drift-cloud 60s linear infinite;
-    }
-
-    &.cloud-2 {
-      top: 18%;
-      left: 40%;
-      .blob:nth-child(1) { width: 70px; height: 50px; top: 0; left: 0; }
-      .blob:nth-child(2) { width: 90px; height: 60px; top: -8px; left: 35px; }
-      .blob:nth-child(3) { width: 60px; height: 40px; top: 10px; left: 80px; }
-      animation: drift-cloud 80s linear infinite reverse;
-    }
-
-    &.cloud-3 {
-      top: 14%;
-      left: 75%;
-      .blob:nth-child(1) { width: 50px; height: 30px; top: 0; left: 0; }
-      .blob:nth-child(2) { width: 70px; height: 45px; top: -10px; left: 25px; }
-      .blob:nth-child(3) { width: 40px; height: 30px; top: 5px; left: 60px; }
-      animation: drift-cloud 70s ease-in-out infinite alternate;
+    
+    // Soft outer glow.
+    &::before {
+      content: '';
+    position: absolute;
+      top: -20px;
+      left: -20px;
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle, var(--sun-glow) 40%, transparent 70%);
+    border-radius: 50%;
+      opacity: 0.8;
+      animation: sun-pulse 8s infinite alternate ease-in-out;
+  }
+  
+    // Dynamic, rotating "god rays" using a conic-gradient.
+    &::after {
+      content: '';
+    position: absolute;
+      top: -50px;
+      left: -50px;
+      width: 220px;
+      height: 220px;
+      background: conic-gradient(
+        from 10deg,
+        rgba(255, 223, 163, 0.05) 0deg 15deg,
+        rgba(255, 223, 163, 0.5) 15deg 25deg,
+        rgba(255, 223, 163, 0.05) 25deg 60deg,
+        rgba(255, 223, 163, 0.4) 60deg 70deg,
+        rgba(255, 223, 163, 0.05) 70deg 110deg,
+        rgba(255, 223, 163, 0.5) 110deg 125deg,
+        rgba(255, 223, 163, 0.05) 125deg 180deg,
+        rgba(255, 223, 163, 0.35) 180deg 190deg,
+        rgba(255, 223, 163, 0.05) 190deg 360deg
+      );
+    border-radius: 50%;
+      animation: sun-rays-rotate 35s infinite linear;
     }
   }
 }
 
-
-@keyframes drift-cloud {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-60px); }
+@keyframes sun-rays-rotate {
+  to { transform: rotate(360deg); }
 }
-// === GROUND ===
+
+@keyframes sun-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+// Clouds are composed of multiple 'puffs' to create a fluffy, natural shape.
+.cloud {
+  position: absolute;
+  animation: cloud-drift 80s linear infinite alternate;
+  filter: blur(18px);
+  
+  .puff-1, .puff-2, .puff-3 {
+    position: absolute;
+    background: rgba(255,255,255,0.75);
+    border-radius: 50%;
+  }
+  
+  .puff-1 { width: 60px; height: 60px; top: 20px; transform: scale(0.9); }
+  .puff-2 { width: 80px; height: 80px; left: 30px; transform: scale(1.1); }
+  .puff-3 { width: 50px; height: 50px; top: 25px; left: 60px; transform: scale(0.8); }
+
+  // Cloud positions and animation durations are varied for a more organic sky.
+  &.cloud-1 { top: 10%; left: 15%; transform: scale(0.8); }
+  &.cloud-2 { top: 20%; left: 80%; transform: scale(1); animation-duration: 120s; }
+  &.cloud-3 { top: 25%; left: 40%; transform: scale(0.6); animation-duration: 90s; }
+  &.cloud-4 { top: 5%; left: 50%; transform: scale(0.9); animation-duration: 100s; }
+}
+
+@keyframes cloud-drift {
+  from { transform: translateX(-50px) scale(var(--scale, 1)); }
+  to   { transform: translateX(50px) scale(var(--scale, 1)); }
+}
+
+
+// =============================================================================
+// PARALLAX SYSTEM
+// =============================================================================
+
+// Parallax layers move at different speeds to create a sense of depth.
+// The animation is a very slow, subtle "breathing" motion.
+// Layers are wider than the screen to prevent visible edges during movement.
+.parallax-layer {
+    position: absolute;
+  top: 0;
+  left: -10%;
+  width: 120%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: parallax-scroll var(--parallax-speed) infinite alternate ease-in-out;
+  z-index: 2;
+}
+
+// Pause the subtle parallax on hover to allow user-driven parallax to take over (if JS were added).
+.scene-container:hover .parallax-layer {
+  animation-play-state: paused;
+}
+
+// The 'translateZ' property is what creates the 3D depth.
+// '--shift' controls how much each layer moves during the animation.
+.layer-1 { transform: translateZ(-300px); --shift: 2%; }
+.layer-2 { transform: translateZ(-150px); --shift: 4%; }
+.layer-3 { transform: translateZ(-50px);  --shift: 4%; }
+.layer-4 { transform: translateZ(0px);    --shift: 6%; }
+
+// The animation uses the custom properties defined above.
+@keyframes parallax-scroll {
+  from { transform: translateX(calc(var(--shift) * -1)); }
+  to   { transform: translateX(var(--shift)); }
+}
+
+// CSS variables must be re-declared for use inside @keyframes.
+.layer-1 { --translateZ: -300px; }
+.layer-2 { --translateZ: -150px; }
+.layer-3 { --translateZ: -50px;  }
+.layer-4 { --translateZ: 0px;    }
+
+
+// =============================================================================
+// SCENE ELEMENTS
+// =============================================================================
+
+// Elements are placed on their respective parallax layers.
+// Their appearance is adjusted based on distance (e.g., far trees are smaller).
+
+// Mountains (Layer 1 - Farthest)
+.mountain {
+  position: absolute;
+  bottom: 0;
+  width: 40%;
+  height: 50%;
+  background: var(--mountain-color);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+
+  &.mountain-1 { left: 10%; bottom: 10%; width: 50%; height: 60%; opacity: 0.8; }
+  &.mountain-2 { left: 55%; bottom: 5%; width: 45%; height: 55%; opacity: 0.9; }
+}
+
+// Trees (Layers 2, 3, 4)
+.tree {
+  position: absolute;
+  bottom: 25%;
+  transition: transform 0.5s ease;
+  
+  &:hover {
+    transform: rotate(2deg) scale(1.02);
+  }
+  
+  .trunk {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    background: var(--tree-trunk);
+    }
+  .leaves {
+      position: absolute;
+    bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+    background: var(--tree-leaves);
+      border-radius: 50%;
+  }
+}
+
+.tree--far {
+  .trunk  { width: 8px; height: 40px; }
+  .leaves { width: 40px; height: 40px; bottom: 35px; }
+  &:nth-child(1) { left: 20%; transform: scale(0.7); }
+  &:nth-child(2) { left: 75%; transform: scale(0.65); }
+  &:nth-child(3) { left: 45%; transform: scale(0.75); }
+}
+
+.tree--mid {
+  .trunk  { width: 12px; height: 60px; }
+  .leaves { width: 60px; height: 60px; bottom: 55px; }
+  &:nth-child(1) { left: 10%; transform: scale(0.85); }
+  &:nth-child(2) { left: 85%; transform: scale(0.9); }
+}
+
+.tree--near {
+  .trunk  { width: 15px; height: 80px; }
+  .leaves { width: 80px; height: 80px; bottom: 75px; }
+  &:nth-child(1) { left: 5%; transform: scale(1); }
+  &:nth-child(2) { left: 95%; transform: scale(1.05); }
+  &:nth-child(3) { left: 30%; transform: scale(0.95); }
+  &:nth-child(4) { left: 70%; transform: scale(1.1); }
+  &:nth-child(5) { left: 50%; transform: scale(1); }
+}
+
+// Ground (Layer 4 - Closest)
 .ground {
   position: absolute;
   bottom: 0;
+  left: 0;
   width: 100%;
-  height: 14%;
-  background: #f1d0d9;
-  border-top: 1px solid $edge;
-  box-shadow: inset 0 12px 24px rgba(0,0,0,0.05);
-  z-index: 0;
+  height: 25%;
+  background: var(--ground-color);
+}
 
+
+// =============================================================================
+// BIRD SYSTEM - ADVANCED
+// =============================================================================
+
+// The bird system is placed on its own layer to fly in front of the parallax background.
+.bird-system {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  z-index: 3;
+}
+
+// Each bird is designed with pseudo-elements for a more organic, non-blocky shape.
+.bird {
+  position: absolute;
+  top: 50%;
+  left: -10%;
+  width: 25px;
+  height: 20px;
+  transform-style: preserve-3d;
+  will-change: transform;
+  
+  // The main body shape is defined by a clip-path.
+  &::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    clip-path: polygon(0% 50%, 20% 0%, 100% 30%, 80% 100%, 20% 90%);
+    background: currentColor;
+  }
+  // The wing flaps independently using its own animation.
   &::after {
     content: '';
     position: absolute;
-    top: -4px;
-    left: 0;
-    width: 100%;
-    height: 12px;
-    background: repeating-radial-gradient(circle at bottom, $petal 0 2px, transparent 3px 6px);
-    opacity: 0.4;
-    pointer-events: none;
-    z-index: 1;
-  }
-}
-
-// === TREES ===
-.pixel-tree {
-  position: absolute;
-  bottom: 12%;
-  width: 12px;
-  height: 40px;
-  background: $tree-bark;
-  z-index: 1;
-
-  box-shadow:
-    0 -10px 0 $tree-leaf,      // center crown
-    -10px -10px 0 $tree-leaf,  // left crown
-    10px -10px 0 $tree-leaf,   // right crown
-    -20px -20px 0 $tree-leaf,  // outer left
-    20px -20px 0 $tree-leaf,   // outer right
-    0 -20px 0 $tree-leaf,      // top center
-    -10px -20px 0 $tree-leaf,  // top left
-    10px -20px 0 $tree-leaf;   // top right
-
-  &.tree-left { left: 10%; }
-  &.tree-right { right: 10%; }
-
-  &.tree-back-left {
-    left: 22%;
-    transform: scale(0.7);
-    opacity: 0.6;
-    z-index: 0;
-  }
-
-  &.tree-back-right {
-    right: 22%;
-    transform: scale(0.7);
-    opacity: 0.6;
-    z-index: 0;
-  }
-}
-// === PETAL SHOWER ===
-.falling-petals {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-
-  .petal-fall {
-    position: absolute;
-    width: 10px; height: 14px;
-    background: $petal;
-    border-radius: 50% 50% 50% 0;
-    opacity: 0.8;
-    animation: fall linear infinite;
-  }
-
-  @for $i from 1 through 6 {
-    .p#{$i} {
-      left: #{15% * $i};
-      animation-duration: #{4 + $i}s;
-      animation-delay: #{($i - 1)}s;
-    }
-  }
-}
-
-@keyframes fall {
-  0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
-  10% { opacity: 1; }
-  100% { transform: translateY(300px) rotate(360deg); opacity: 0; }
-}
-// === FLOWERS ===
-.flowers {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  bottom: 0;
-
-  .flower {
-    position: absolute;
-    bottom: 10%;
-    width: 6px;
-    height: 6px;
+    top: 5px;
+    left: 5px;
+    width: 90%;
+    height: 10px;
+    background: currentColor;
     border-radius: 50%;
-    animation: sway 3s ease-in-out infinite alternate;
-
-    &::before {
-      content: "";
-      position: absolute;
-      bottom: -6px;
-      left: 2px;
-      width: 2px;
-      height: 6px;
-      background: $stem;
-    }
-
-    // === SIZE VARIANTS ===
-    &.tiny {
-      transform: scale(0.6);
-      opacity: 0.7;
-    }
-
-    &.big {
-      transform: scale(1.4);
-    }
-
-    &.regular {
-      transform: scale(1);
-    }
-
-    // === COLOR VARIANTS ===
-    &.pink {
-      background: $flower;
-      box-shadow:
-        -4px -4px 0 $flower,
-        4px -4px 0 $flower,
-        -4px 4px 0 $flower,
-        4px 4px 0 $flower;
-    }
-
-    &.lavender {
-      background: #d9a8ff;
-      box-shadow:
-        -4px -4px 0 #d9a8ff,
-        4px -4px 0 #d9a8ff,
-        -4px 4px 0 #d9a8ff,
-        4px 4px 0 #d9a8ff;
-    }
-
-    &.yellow {
-      background: #fcd16b;
-      box-shadow:
-        -4px -4px 0 #fcd16b,
-        4px -4px 0 #fcd16b,
-        -4px 4px 0 #fcd16b,
-        4px 4px 0 #fcd16b;
-    }
-
-    // === POSITIONING ===
-    &.f1  { left: 4%;  bottom: 10%; }
-    &.f2  { left: 9%;  bottom: 9.5%; }
-    &.f3  { left: 13%; bottom: 10.5%; }
-    &.f4  { left: 18%; bottom: 9%; }
-    &.f5  { left: 24%; bottom: 10%; }
-    &.f6  { left: 29%; bottom: 9.5%; }
-    &.f7  { left: 34%; bottom: 10.8%; }
-    &.f8  { left: 39%; bottom: 9.3%; }
-    &.f9  { left: 44%; bottom: 10.4%; }
-    &.f10 { left: 49%; bottom: 9.2%; }
-    &.f11 { left: 54%; bottom: 10.2%; }
-    &.f12 { left: 58%; bottom: 9%; }
-    &.f13 { left: 62%; bottom: 10.6%; }
-    &.f14 { left: 66%; bottom: 9.2%; }
-    &.f15 { left: 70%; bottom: 10.1%; }
-    &.f16 { left: 75%; bottom: 9%; }
-    &.f17 { left: 79%; bottom: 10.7%; }
-    &.f18 { left: 83%; bottom: 9.4%; }
-    &.f19 { left: 87%; bottom: 10.2%; }
-    &.f20 { left: 91%; bottom: 9.1%; }
-    &.f21 { left: 95%; bottom: 10.6%; }
-    &.f22 { left: 97%; bottom: 9%; }
-    &.f23 { left: 2%;  bottom: 10.3%; }
-    &.f24 { left: 6%;  bottom: 9.6%; }
+    transform-origin: 20% 50%;
+    animation: flap var(--bird-flap-speed) infinite ease-in-out alternate;
   }
 }
 
-// === Swaying Motion ===
-@keyframes sway {
-  0%   { transform: translateX(0) scale(1); }
-  50%  { transform: translateX(1px) scale(1.01); }
-  100% { transform: translateX(-1px) scale(0.99); }
+@keyframes flap {
+  from { transform: rotateZ(-20deg) scaleY(1); }
+  to   { transform: rotateZ(20deg) scaleY(1.2); }
+}
+
+// Modifier classes define the color for each bird species.
+.bird--sparrow { color: var(--sparrow-color); }
+.bird--robin   { color: var(--robin-color); }
+.bird--jay     { color: var(--jay-color); }
+
+// This SASS loop procedurally generates the flight animations.
+// It assigns one of three flight paths to each bird, with a randomized
+// duration and delay, creating an infinite and non-repetitive flock.
+@for $i from 1 through 20 {
+  .bird:nth-child(#{$i}) {
+    $flight-duration: random-range(12, 20) * 1s;
+    $flight-delay: random-range(0, 30) * -1s;
+    
+    animation: flight-path-#{($i % 3) + 1} $flight-duration linear $flight-delay infinite;
+  }
+}
+
+// A library of complex, multi-point flight paths.
+// They use 3D transforms to simulate banking and swooping.
+@keyframes flight-path-1 { // Gentle Swoop
+  0%   { transform: translate(0, -10vh) rotateZ(0deg); opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { transform: translate(60vw, 10vh) rotateZ(15deg); }
+  90%  { opacity: 1; }
+  100% { transform: translate(110vw, -20vh) rotateZ(0deg); opacity: 0; }
+}
+@keyframes flight-path-2 { // Quick Dart
+  0%   { transform: translate(0, 20vh) rotateZ(-10deg); opacity: 0; }
+  10%  { opacity: 1; }
+  40%  { transform: translate(50vw, 15vh) rotateZ(10deg); }
+  70%  { transform: translate(80vw, 30vh) rotateZ(-15deg); }
+  90%  { opacity: 1; }
+  100% { transform: translate(110vw, 25vh) rotateZ(0deg); opacity: 0; }
+}
+@keyframes flight-path-3 { // High Arc
+  0%   { transform: translate(0, 40vh) rotateZ(5deg); opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { transform: translate(55vw, -30vh) rotateZ(20deg); }
+  90%  { opacity: 1; }
+  100% { transform: translate(110vw, 10vh) rotateZ(-5deg); opacity: 0; }
 }
 
 
-// === CHARACTERS ===
-.pixel-character {
+// =============================================================================
+// PETAL SYSTEM
+// =============================================================================
+.petal-system {
   position: absolute;
-  bottom: 12%;
+  top: 0;
+  left: 0;
+    width: 100%;
+    height: 100%;
+  z-index: 4;
+  pointer-events: none;
+}
+
+// Each petal's animation is procedurally generated for a chaotic, natural look.
+.petal {
+    position: absolute;
+  top: -10%;
+  left: 0;
   width: 12px;
   height: 12px;
-  background: $character;
-  box-shadow:
-    0 -12px 0 $character,
-    -4px -12px 0 $core,
-    4px -12px 0 $core,
-    0 -20px 0 #5c4b51;
-
-  &.character-left { left: 48%; }
-  &.character-right { left: 52%; }
+  background: var(--petal-color);
+  border-radius: 10% 50%;
+  will-change: transform;
 }
-// === BIRDS ===
-.birds {
-  .bird {
+
+@for $i from 1 through 60 {
+  .petal:nth-child(#{$i}) {
+    $fall-duration: random-range(10, 20) * 1s;
+    $fall-delay: random-range(0, 15) * 1s;
+    $x-start: random-range(0, 100) * 1vw;
+    $x-end-drift: random-range(-200, 200) * 1px;
+    $rotation: random-range(-720, 720) * 1deg;
+
+    left: $x-start;
+    animation: petal-fall $fall-duration linear $fall-delay infinite;
+    // CSS variables are used to pass SASS values into the keyframes.
+    --x-end: calc(#{$x-start} + #{$x-end-drift});
+    --rotation: #{$rotation};
+  }
+}
+
+@keyframes petal-fall {
+  to {
+    transform: translateY(110vh) translateX(var(--x-end)) rotate(var(--rotation));
+  }
+}
+
+
+// =============================================================================
+// SCENE OVERLAY
+// =============================================================================
+
+// A subtle gradient overlay to unify the scene's color palette.
+.scene::after {
+  content: '';
     position: absolute;
-    width: 0;
-    height: 0;
-    opacity: 0.9;
-    animation: bird-bob 1.6s ease-in-out infinite, flight-path 20s linear infinite;
-
-    &::before,
-    &::after {
-      content: '';
-      position: absolute;
-      width: 18px;
-      height: 2px;
-      background: #222;
-      border-radius: 100% 100% 0 0;
-      top: -2px;
-      transform: scaleX(1.2);
-    }
-
-    &::before {
-      left: -18px;
-      transform-origin: right bottom;
-      animation: wing-left 1.6s ease-in-out infinite;
-    }
-
-    &::after {
-      right: -18px;
-      transform-origin: left bottom;
-      animation: wing-right 1.6s ease-in-out infinite;
-    }
-  }
-
-  // === SOLO BIRDS ===
-  .b1  { top: 10%; left: -12%; animation-name: bird-bob, fly-curve1; animation-delay: 0s; }
-  .b2  { top: 14%; left: -12%; animation-name: bird-bob, fly-curve2; animation-delay: 1.5s; }
-  .b3  { top: 8%;  left: -12%; animation-name: bird-bob, fly-zigzag; animation-delay: 3s; }
-
-  // === GROUP FORMATION (V-Shape) ===
-  .b4  { top: 18%; left: -12%; animation-name: bird-bob, fly-v-formation; animation-delay: 4s; }
-  .b5  { top: 17%; left: -14%; animation-name: bird-bob, fly-v-formation; animation-delay: 4.1s; }
-  .b6  { top: 19%; left: -14%; animation-name: bird-bob, fly-v-formation; animation-delay: 4.2s; }
-  .b7  { top: 18%; left: -16%; animation-name: bird-bob, fly-v-formation; animation-delay: 4.3s; }
-
-  // === EXTRA SOLO BIRDS ===
-  .b8  { top: 11%; left: -12%; animation-name: bird-bob, fly-zigzag; animation-delay: 5s; }
-  .b9  { top: 13%; left: -12%; animation-name: bird-bob, fly-curve2; animation-delay: 6s; }
-  .b10 { top: 9%;  left: -12%; animation-name: bird-bob, fly-curve1; animation-delay: 7s; }
-}
-
-// === WING FLAP ===
-@keyframes wing-left {
-  0%   { transform: rotate(-10deg); }
-  40%  { transform: rotate(-35deg); }
-  60%  { transform: rotate(-35deg); }
-  100% { transform: rotate(-10deg); }
-}
-@keyframes wing-right {
-  0%   { transform: rotate(10deg); }
-  40%  { transform: rotate(35deg); }
-  60%  { transform: rotate(35deg); }
-  100% { transform: rotate(10deg); }
-}
-
-// === SMOOTH BODY BOB SYNCED WITH WINGS ===
-@keyframes bird-bob {
-  0%   { transform: translateY(0); }
-  25%  { transform: translateY(-2px); }
-  50%  { transform: translateY(-3px); }
-  75%  { transform: translateY(-2px); }
-  100% { transform: translateY(0); }
-}
-
-// === IMPROVED FLIGHT PATHS ===
-@keyframes fly-curve1 {
-  0%   { transform: translateX(0vw) translateY(0); opacity: 1; }
-  20%  { transform: translateX(20vw) translateY(-2vh); }
-  40%  { transform: translateX(40vw) translateY(1vh); }
-  60%  { transform: translateX(60vw) translateY(-3vh); }
-  80%  { transform: translateX(80vw) translateY(0.5vh); opacity: 0.6; }
-  100% { transform: translateX(110vw) translateY(0); opacity: 0; }
-}
-
-@keyframes fly-curve2 {
-  0%   { transform: translateX(0vw) translateY(0); }
-  15%  { transform: translateX(15vw) translateY(3vh); }
-  35%  { transform: translateX(35vw) translateY(-2vh); }
-  55%  { transform: translateX(55vw) translateY(1.5vh); }
-  75%  { transform: translateX(75vw) translateY(-1.5vh); opacity: 0.6; }
-  100% { transform: translateX(110vw) translateY(0); opacity: 0; }
-}
-
-@keyframes fly-zigzag {
-  0%   { transform: translateX(0vw) translateY(0vh); }
-  10%  { transform: translateX(10vw) translateY(-2vh); }
-  20%  { transform: translateX(20vw) translateY(2vh); }
-  30%  { transform: translateX(30vw) translateY(-1vh); }
-  40%  { transform: translateX(40vw) translateY(1vh); }
-  50%  { transform: translateX(50vw) translateY(-1vh); }
-  60%  { transform: translateX(60vw) translateY(1.5vh); }
-  70%  { transform: translateX(70vw) translateY(-2vh); }
-  80%  { transform: translateX(80vw) translateY(1vh); opacity: 0.5; }
-  100% { transform: translateX(110vw) translateY(0vh); opacity: 0; }
-}
-
-@keyframes fly-v-formation {
-  0%   { transform: translateX(0vw) translateY(0); }
-  20%  { transform: translateX(20vw) translateY(-1vh); }
-  40%  { transform: translateX(40vw) translateY(0.5vh); }
-  60%  { transform: translateX(60vw) translateY(-0.5vh); }
-  80%  { transform: translateX(80vw) translateY(0.5vh); opacity: 0.6; }
-  100% { transform: translateX(110vw) translateY(0); opacity: 0; }
-}
-
-// === SPARKLES ===
-.sparkles {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-
-  .sparkle {
-    position: absolute;
-    width: 4px; height: 4px;
-    background: $sparkle;
-    border-radius: 50%;
-    opacity: 0.6;
-    animation: glow 2s ease-in-out infinite;
-  }
-
-  $top-pos: 10, 20, 30, 40, 50, 60, 70, 80, 25, 35;
-  $left-pos: 15, 25, 35, 45, 55, 65, 75, 85, 20, 30;
-
-  @for $i from 1 through 10 {
-    .s#{$i} {
-      top: nth($top-pos, $i) * 1%;
-      left: nth($left-pos, $i) * 1%;
-      animation-delay: ($i % 4) * 1s;
-    }
-  }
-}
-
-@keyframes glow {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.4); }
-}
-
-// === FOOTER TEXT ===
-.footer-text {
-  position: absolute;
-  bottom: 8px;
+  top: 0;
+  left: 0;
   width: 100%;
-  text-align: center;
-  font-size: 0.9rem;
-  color: #999;
-  font-style: italic;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--scene-overlay-top), var(--scene-overlay-bottom));
+  z-index: 5;
+  pointer-events: none;
 }
 
+// =============================================================================
+// RESPONSIVE DESIGN
+// =============================================================================
+
+// On smaller screens, the layout is adjusted and the number of animated
+// elements is reduced to ensure smooth performance.
+@media (max-width: 768px) {
+  .scene-info {
+    top: 15px;
+    bottom: auto;
+    left: 15px;
+    right: 15px;
+    width: auto;
+    max-width: 100%;
+    padding: 15px;
+
+    // Add scrollability for shorter viewports
+    max-height: 50vh;
+    overflow-y: auto;
+    
+    h2 { font-size: 1.1em; }
+    p, li { font-size: 0.9em; }
+    ul { padding-left: 25px; }
+  }
+
+  // Reduce number of birds on mobile for performance.
+  .bird:nth-child(n+10) { display: none; }
+  .petal:nth-child(n+30) { display: none; }
+}
+
+// On very small screens, hide the info panel entirely to prioritize the scene.
+@media (max-width: 480px) {
+  .scene-info {
+    display: none;
+  }
+} 
