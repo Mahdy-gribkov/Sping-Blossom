@@ -49,6 +49,18 @@
 }
 
 // =============================================================================
+// CSS HOUDINI & ADVANCED PROPERTIES
+// =============================================================================
+
+// Registering a custom property to be used for trigonometric animations.
+// This tells the browser that --bob-angle is an <angle> and can be animated smoothly.
+@property --bob-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+// =============================================================================
 // BASE & RESET
 // =============================================================================
 
@@ -194,7 +206,7 @@ html, body {
   width: 100%;
   height: 100%;
   z-index: 1;
-  
+
   .sky-gradient {
     width: 100%;
     height: 100%;
@@ -254,7 +266,7 @@ html, body {
       );
     border-radius: 50%;
       animation: sun-rays-rotate 35s infinite linear;
-    }
+}
   }
 }
 
@@ -288,7 +300,7 @@ html, body {
   &.cloud-2 { top: 20%; left: 80%; transform: scale(1); animation-duration: 120s; }
   &.cloud-3 { top: 25%; left: 40%; transform: scale(0.6); animation-duration: 90s; }
   &.cloud-4 { top: 5%; left: 50%; transform: scale(0.9); animation-duration: 100s; }
-}
+      }
 
 @keyframes cloud-drift {
   from { transform: translateX(-50px) scale(var(--scale, 1)); }
@@ -330,7 +342,7 @@ html, body {
 @keyframes parallax-scroll {
   from { transform: translateX(calc(var(--shift) * -1)); }
   to   { transform: translateX(var(--shift)); }
-}
+  }
 
 // CSS variables must be re-declared for use inside @keyframes.
 .layer-1 { --translateZ: -300px; }
@@ -383,7 +395,7 @@ html, body {
       transform: translateX(-50%);
     background: var(--tree-leaves);
       border-radius: 50%;
-  }
+    }
 }
 
 .tree--far {
@@ -392,8 +404,8 @@ html, body {
   &:nth-child(1) { left: 20%; transform: scale(0.7); }
   &:nth-child(2) { left: 75%; transform: scale(0.65); }
   &:nth-child(3) { left: 45%; transform: scale(0.75); }
-}
-
+  }
+  
 .tree--mid {
   .trunk  { width: 12px; height: 60px; }
   .leaves { width: 60px; height: 60px; bottom: 55px; }
@@ -409,7 +421,7 @@ html, body {
   &:nth-child(3) { left: 30%; transform: scale(0.95); }
   &:nth-child(4) { left: 70%; transform: scale(1.1); }
   &:nth-child(5) { left: 50%; transform: scale(1); }
-}
+    }
 
 // Ground (Layer 4 - Closest)
 .ground {
@@ -419,7 +431,7 @@ html, body {
   width: 100%;
   height: 25%;
   background: var(--ground-color);
-}
+      }
 
 
 // =============================================================================
@@ -437,7 +449,7 @@ html, body {
   z-index: 3;
 }
 
-// Each bird is designed with pseudo-elements for a more organic, non-blocky shape.
+// The .bird element is now only a container for the flight path.
 .bird {
   position: absolute;
   top: 50%;
@@ -446,15 +458,31 @@ html, body {
   height: 20px;
   transform-style: preserve-3d;
   will-change: transform;
+}
+
+// The .bird__body handles all the fine motor animations: flapping, bobbing, and appearance.
+.bird__body {
+  width: 100%;
+  height: 100%;
+  position: absolute;
   
+  // Apply the new vertical bob and the enhanced flap animation.
+  // The bobbing speed is linked to the wing flap speed for realism.
+  animation: 
+    vertical-bob calc(var(--bird-flap-speed) * 2) infinite ease-in-out,
+    flap var(--bird-flap-speed) infinite ease-in-out alternate;
+
   // The main body shape is defined by a clip-path.
   &::before {
     content: '';
     position: absolute;
     width: 100%;
     height: 100%;
+    // The clip-path will now be animated in the 'flap' keyframes.
     clip-path: polygon(0% 50%, 20% 0%, 100% 30%, 80% 100%, 20% 90%);
     background: currentColor;
+    animation: inherit; // Inherit animation properties for the clip-path change
+    animation-name: flap-body; // A separate animation just for the body shape
   }
   // The wing flaps independently using its own animation.
   &::after {
@@ -467,13 +495,30 @@ html, body {
     background: currentColor;
     border-radius: 50%;
     transform-origin: 20% 50%;
-    animation: flap var(--bird-flap-speed) infinite ease-in-out alternate;
+    animation: inherit; // Inherits timing from parent .bird__body
   }
 }
 
+// New animation for lifelike vertical bobbing using sin()
+@keyframes vertical-bob {
+  from { --bob-angle: 0deg; }
+  to   { --bob-angle: 360deg; }
+}
+
+// The flap animation is enhanced with more steps and a corresponding body animation.
 @keyframes flap {
-  from { transform: rotateZ(-20deg) scaleY(1); }
-  to   { transform: rotateZ(20deg) scaleY(1.2); }
+  from { transform: rotateZ(-20deg) scaleY(1) translateY(calc(sin(var(--bob-angle)) * -4px)); }
+  to   { transform: rotateZ(20deg) scaleY(1.2) translateY(calc(sin(var(--bob-angle)) * -4px)); }
+}
+
+// A new, dedicated animation for the body's squash-and-stretch effect.
+@keyframes flap-body {
+  from {
+    clip-path: polygon(0% 50%, 20% 10%, 100% 35%, 80% 100%, 20% 90%); // Slightly elongated
+  }
+  to {
+    clip-path: polygon(0% 50%, 20% 0%, 100% 30%, 80% 95%, 20% 85%); // Slightly compressed
+  }
 }
 
 // Modifier classes define the color for each bird species.
@@ -490,7 +535,7 @@ html, body {
     $flight-delay: random-range(0, 30) * -1s;
     
     animation: flight-path-#{($i % 3) + 1} $flight-duration linear $flight-delay infinite;
-  }
+      }
 }
 
 // A library of complex, multi-point flight paths.
@@ -543,7 +588,7 @@ html, body {
   border-radius: 10% 50%;
   will-change: transform;
 }
-
+    
 @for $i from 1 through 60 {
   .petal:nth-child(#{$i}) {
     $fall-duration: random-range(10, 20) * 1s;
@@ -557,14 +602,14 @@ html, body {
     // CSS variables are used to pass SASS values into the keyframes.
     --x-end: calc(#{$x-start} + #{$x-end-drift});
     --rotation: #{$rotation};
-  }
-}
+      }
+    }
 
 @keyframes petal-fall {
   to {
     transform: translateY(110vh) translateX(var(--x-end)) rotate(var(--rotation));
-  }
-}
+      }
+    }
 
 
 // =============================================================================
@@ -591,23 +636,23 @@ html, body {
 // On smaller screens, the layout is adjusted and the number of animated
 // elements is reduced to ensure smooth performance.
 @media (max-width: 768px) {
-  .scene-info {
+.scene-info {
     top: 15px;
     bottom: auto;
     left: 15px;
     right: 15px;
     width: auto;
     max-width: 100%;
-    padding: 15px;
+  padding: 15px;
 
     // Add scrollability for shorter viewports
     max-height: 50vh;
     overflow-y: auto;
-    
+  
     h2 { font-size: 1.1em; }
     p, li { font-size: 0.9em; }
     ul { padding-left: 25px; }
-  }
+}
 
   // Reduce number of birds on mobile for performance.
   .bird:nth-child(n+10) { display: none; }

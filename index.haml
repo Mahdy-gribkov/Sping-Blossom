@@ -52,12 +52,10 @@
               
         / Bird System
         .bird-system
-          - 8.times do |i|
-            .bird.bird--sparrow{:class => "bird-#{i+1}"}
-          - 6.times do |i|
-            .bird.bird--robin{:class => "bird-#{i+9}"}
-          - 5.times do |i|
-            .bird.bird--jay{:class => "bird-#{i+15}"}
+          - 20.times do |i|
+            - bird_type = ['sparrow', 'robin', 'jay'].sample
+            .bird{:class => "bird--#{bird_type}"}
+              .bird__body
 
         / Petal System
         .petal-system
