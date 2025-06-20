@@ -52,26 +52,30 @@
               
         / Bird System
         .bird-system
-          - 20.times do |i|
+          - 40.times do |i|
             - bird_type = ['sparrow', 'robin', 'jay'].sample
             .bird{:class => "bird--#{bird_type}"}
               .bird__body
 
-        / Petal System
-        .petal-system
-          - 60.times do
+        / Petal System - Split into two layers for true depth
+        .petal-system.petal-system--bg
+          - 100.times do
+            .petal
+        .petal-system.petal-system--fg
+          - 100.times do
             .petal
               
       / UI and Info Panels
       .scene-info
         %h2 🌸 Spring Blossom Symphony
-        %p An intricately crafted pixel environment brought to life with responsive HAML structure and layered SCSS animations.
+        %p A richly animated pixel scene built with responsive HAML and layered SCSS — capturing the fleeting magic of spring.
+        
         %h3 What to Notice:
         %ul
-          %li Advanced parallax system for immersive depth.
-          %li Procedural flocking behavior with randomized, infinite flight paths.
-          %li Dynamic atmospheric perspective using CSS filters and transforms.
-          %li Fully responsive design from mobile to ultra-wide displays.
+          %li Immersive parallax for atmospheric depth
+          %li Procedural bird flocking with natural motion paths
+          %li Dynamic skies and petals using pure CSS animation
+          %li Fully responsive across all device sizes
         
       / Loading Screen
       .loading-screen
@@ -87,3 +91,6 @@
     / Hidden elements for screen readers
     .sr-only{"aria-live" => "polite"}
       %p Spring Blossom scene loaded. Use keyboard navigation to explore the interactive elements.
+
+    / Scene Overlay
+    .scene::after

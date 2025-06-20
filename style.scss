@@ -46,6 +46,9 @@
   --parallax-speed: 120s;
   --bird-flap-speed: 0.4s;
   --petal-fall-duration: 15s;
+
+  // Layout variables
+  --footer-height: 40px;
 }
 
 // =============================================================================
@@ -84,6 +87,7 @@ html, body {
   position: relative;
   perspective: 800px;
   perspective-origin: center;
+  padding-bottom: var(--footer-height);
 }
 
 .scene {
@@ -142,7 +146,7 @@ html, body {
 
 .scene-info {
     position: absolute;
-  bottom: 20px;
+  bottom: 60px;
   left: 20px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(5px);
@@ -150,7 +154,7 @@ html, body {
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   z-index: 50;
-  max-width: 300px;
+  max-width: 280px;
   transition: transform 0.3s ease;
 
   &:hover {
@@ -182,6 +186,10 @@ html, body {
   color: var(--footer-text);
   opacity: 0; // Start hidden
   animation: fade-in-footer 1s ease-out 2s forwards; // Sync with loader
+  height: var(--footer-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   .hebrew {
     direction: rtl;
@@ -218,9 +226,9 @@ html, body {
   position: absolute;
     top: 10%;
     right: 15%;
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, var(--sun-core) 30%, transparent 60%);
+    width: 100px; // Slightly smaller core
+    height: 100px;
+    background: radial-gradient(circle, var(--sun-core) 40%, transparent 70%);
     border-radius: 50%;
     animation: sun-pulse 12s infinite ease-in-out;
     transition: transform 0.5s ease;
@@ -230,43 +238,41 @@ html, body {
       transform: scale(1.1);
     }
     
-    // Soft outer glow.
+    // Soft outer glow - restored
     &::before {
       content: '';
-    position: absolute;
-      top: -20px;
-      left: -20px;
-      width: 160px;
-      height: 160px;
+      position: absolute;
+      top: -25px;
+      left: -25px;
+      width: 150px;
+      height: 150px;
       background: radial-gradient(circle, var(--sun-glow) 40%, transparent 70%);
-    border-radius: 50%;
-      opacity: 0.8;
+      border-radius: 50%;
+      opacity: 0.9;
       animation: sun-pulse 8s infinite alternate ease-in-out;
-  }
+    }
   
-    // Dynamic, rotating "god rays" using a conic-gradient.
+    // Restored ::after for the definitive rays effect.
     &::after {
       content: '';
-    position: absolute;
-      top: -50px;
-      left: -50px;
-      width: 220px;
-      height: 220px;
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
       background: conic-gradient(
-        from 10deg,
-        rgba(255, 223, 163, 0.05) 0deg 15deg,
-        rgba(255, 223, 163, 0.5) 15deg 25deg,
-        rgba(255, 223, 163, 0.05) 25deg 60deg,
-        rgba(255, 223, 163, 0.4) 60deg 70deg,
-        rgba(255, 223, 163, 0.05) 70deg 110deg,
-        rgba(255, 223, 163, 0.5) 110deg 125deg,
-        rgba(255, 223, 163, 0.05) 125deg 180deg,
-        rgba(255, 223, 163, 0.35) 180deg 190deg,
-        rgba(255, 223, 163, 0.05) 190deg 360deg
+        // Final, sharp, multi-ray implementation
+        transparent 0deg 10deg, rgba(255,223,163,0.7) 10deg 18deg, transparent 18deg 35deg,
+        transparent 35deg 45deg, rgba(255,223,163,0.6) 45deg 52deg, transparent 52deg 70deg,
+        transparent 90deg 100deg, rgba(255,223,163,0.5) 100deg 108deg, transparent 108deg 120deg,
+        transparent 160deg 170deg, rgba(255,223,163,0.7) 170deg 178deg, transparent 178deg 200deg,
+        transparent 210deg 220deg, rgba(255,223,163,0.6) 220deg 228deg, transparent 228deg 240deg,
+        transparent 270deg 280deg, rgba(255,223,163,0.5) 280deg 288deg, transparent 288deg 300deg,
+        transparent 330deg 340deg, rgba(255,223,163,0.6) 340deg 348deg, transparent 348deg 360deg
       );
-    border-radius: 50%;
-      animation: sun-rays-rotate 35s infinite linear;
-}
+      border-radius: 50%;
+      animation: sun-rays-rotate 45s infinite linear;
+    }
   }
 }
 
@@ -527,15 +533,24 @@ html, body {
 .bird--jay     { color: var(--jay-color); }
 
 // This SASS loop procedurally generates the flight animations.
-// It assigns one of three flight paths to each bird, with a randomized
-// duration and delay, creating an infinite and non-repetitive flock.
-@for $i from 1 through 20 {
+// It assigns one of nine different flight paths (6 forward, 3 reversed)
+// to each of the 40 birds, creating an incredibly complex and non-repetitive flock.
+@for $i from 1 through 40 {
   .bird:nth-child(#{$i}) {
-    $flight-duration: random-range(12, 20) * 1s;
-    $flight-delay: random-range(0, 30) * -1s;
+    $flight-duration: random-range(15, 30) * 1s; // Increase duration variance
+    $flight-delay: random-range(0, 50) * -1s;   // Increase delay variance
     
-    animation: flight-path-#{($i % 3) + 1} $flight-duration linear $flight-delay infinite;
-      }
+    // Assign different paths to create a varied flock
+    @if $i <= 30 {
+      // The first 30 birds fly left-to-right using one of 6 paths
+      $path-num: ($i % 6) + 1;
+      animation: flight-path-#{$path-num} $flight-duration linear $flight-delay infinite;
+    } @else {
+      // The last 10 birds fly right-to-left using one of 3 reversed paths
+      $path-num: (($i - 30) % 3) + 1;
+      animation: flight-path-rev-#{$path-num} $flight-duration linear $flight-delay infinite;
+    }
+  }
 }
 
 // A library of complex, multi-point flight paths.
@@ -543,24 +558,77 @@ html, body {
 @keyframes flight-path-1 { // Gentle Swoop
   0%   { transform: translate(0, -10vh) rotateZ(0deg); opacity: 0; }
   10%  { opacity: 1; }
-  50%  { transform: translate(60vw, 10vh) rotateZ(15deg); }
+  50%  { transform: translate(60vw, 5vh) rotateZ(15deg); } // Raised
   90%  { opacity: 1; }
-  100% { transform: translate(110vw, -20vh) rotateZ(0deg); opacity: 0; }
+  100% { transform: translate(110vw, -15vh) rotateZ(0deg); opacity: 0; } // Raised
 }
+
 @keyframes flight-path-2 { // Quick Dart
-  0%   { transform: translate(0, 20vh) rotateZ(-10deg); opacity: 0; }
+  0%   { transform: translate(0, 15vh) rotateZ(-10deg); opacity: 0; } // Raised
   10%  { opacity: 1; }
-  40%  { transform: translate(50vw, 15vh) rotateZ(10deg); }
-  70%  { transform: translate(80vw, 30vh) rotateZ(-15deg); }
+  40%  { transform: translate(50vw, 10vh) rotateZ(10deg); } // Raised
+  70%  { transform: translate(80vw, 25vh) rotateZ(-15deg); } // Raised
   90%  { opacity: 1; }
-  100% { transform: translate(110vw, 25vh) rotateZ(0deg); opacity: 0; }
+  100% { transform: translate(110vw, 20vh) rotateZ(0deg); opacity: 0; } // Raised
 }
+
 @keyframes flight-path-3 { // High Arc
-  0%   { transform: translate(0, 40vh) rotateZ(5deg); opacity: 0; }
+  0%   { transform: translate(0, 30vh) rotateZ(5deg); opacity: 0; } // Raised
   10%  { opacity: 1; }
-  50%  { transform: translate(55vw, -30vh) rotateZ(20deg); }
+  50%  { transform: translate(55vw, -30vh) rotateZ(20deg); } // Stays high
   90%  { opacity: 1; }
-  100% { transform: translate(110vw, 10vh) rotateZ(-5deg); opacity: 0; }
+  100% { transform: translate(110vw, 5vh) rotateZ(-5deg); opacity: 0; } // Raised
+}
+
+@keyframes flight-path-4 { // Low, fast dash - now safely above ground
+  0%   { transform: translate(0, 65vh) rotateZ(-5deg); opacity: 0; } // Raised
+  10%  { opacity: 1; }
+  30%  { transform: translate(40vw, 60vh) rotateZ(0deg); } // Raised
+  70%  { transform: translate(80vw, 70vh) rotateZ(-10deg); } // Raised
+  90%  { opacity: 1; }
+  100% { transform: translate(110vw, 65vh) rotateZ(0deg); opacity: 0; } // Raised
+}
+
+@keyframes flight-path-5 { // Dramatic Dive
+  0%   { transform: translate(0, -20vh) rotateZ(10deg); opacity: 0; }
+  10%  { opacity: 1; }
+  40%  { transform: translate(50vw, 40vh) rotateZ(-25deg); } // Raised dive
+  90%  { opacity: 1; }
+  100% { transform: translate(110vw, 30vh) rotateZ(5deg); opacity: 0; } // Raised
+}
+
+@keyframes flight-path-6 { // Meandering float
+  0%   { transform: translate(0, 25vh) rotateZ(0deg); opacity: 0; } // Raised
+  10%  { opacity: 1; }
+  25%  { transform: translate(25vw, 35vh) rotateZ(15deg); } // Raised
+  50%  { transform: translate(50vw, 25vh) rotateZ(-15deg); } // Raised
+  75%  { transform: translate(75vw, 35vh) rotateZ(15deg); } // Raised
+  90%  { opacity: 1; }
+  100% { transform: translate(110vw, 25vh) rotateZ(0deg); opacity: 0; } // Raised
+}
+
+// Reversed flight paths for birds flying right-to-left.
+@keyframes flight-path-rev-1 { // Reversed Gentle Swoop
+  0%   { transform: translate(110vw, -15vh) rotateZ(0deg) scaleX(-1); opacity: 0; } // Raised
+  10%  { opacity: 1; }
+  50%  { transform: translate(50vw, 5vh) rotateZ(-15deg) scaleX(-1); } // Raised
+  90%  { opacity: 1; }
+  100% { transform: translate(-10vw, -25vh) rotateZ(0deg) scaleX(-1); opacity: 0; } // Raised
+}
+@keyframes flight-path-rev-2 { // Reversed Quick Dart
+  0%   { transform: translate(110vw, 15vh) rotateZ(10deg) scaleX(-1); opacity: 0; } // Raised
+  10%  { opacity: 1; }
+  40%  { transform: translate(60vw, 10vh) rotateZ(-10deg) scaleX(-1); } // Raised
+  70%  { transform: translate(30vw, 25vh) rotateZ(15deg) scaleX(-1); } // Raised
+  90%  { opacity: 1; }
+  100% { transform: translate(-10vw, 20vh) rotateZ(0deg) scaleX(-1); } // Raised
+}
+@keyframes flight-path-rev-3 { // Reversed High Arc
+  0%   { transform: translate(110vw, 35vh) rotateZ(-5deg) scaleX(-1); opacity: 0; } // Raised
+  10%  { opacity: 1; }
+  50%  { transform: translate(55vw, -30vh) rotateZ(-20deg) scaleX(-1); } // Stays high
+  90%  { opacity: 1; }
+  100% { transform: translate(-10vw, 15vh) rotateZ(5deg) scaleX(-1); opacity: 0; } // Raised
 }
 
 
@@ -571,10 +639,20 @@ html, body {
   position: absolute;
   top: 0;
   left: 0;
-    width: 100%;
-    height: 100%;
-  z-index: 4;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+}
+
+// Background petals fall behind some scene elements.
+.petal-system--bg {
+  z-index: 2; // Same level as parallax layers
+  transform: translateZ(-250px); // Pushed far back, behind trees
+}
+
+// Foreground petals fall in front of everything.
+.petal-system--fg {
+  z-index: 4; // Same as before
 }
 
 // Each petal's animation is procedurally generated for a chaotic, natural look.
@@ -588,28 +666,50 @@ html, body {
   border-radius: 10% 50%;
   will-change: transform;
 }
-    
-@for $i from 1 through 60 {
-  .petal:nth-child(#{$i}) {
-    $fall-duration: random-range(10, 20) * 1s;
-    $fall-delay: random-range(0, 15) * 1s;
-    $x-start: random-range(0, 100) * 1vw;
-    $x-end-drift: random-range(-200, 200) * 1px;
-    $rotation: random-range(-720, 720) * 1deg;
 
-    left: $x-start;
-    animation: petal-fall $fall-duration linear $fall-delay infinite;
-    // CSS variables are used to pass SASS values into the keyframes.
-    --x-end: calc(#{$x-start} + #{$x-end-drift});
-    --rotation: #{$rotation};
-      }
+// SASS loop for both petal systems
+@mixin generate-petals($count, $y-min, $y-max) {
+  @for $i from 1 through $count {
+    .petal:nth-child(#{$i}) {
+      $fall-duration: random-range(12, 28) * 1s;
+      // Stagger animations over 2 minutes for a continuous, non-repetitive effect
+      $fall-delay: random-range(0, 120) * 1s; 
+      $x-start: random-range(0, 100) * 1vw;
+      $x-end-drift: random-range(-200, 200) * 1px;
+      $rotation: random-range(-720, 720) * 1deg;
+      $y-end: calc(#{random-range($y-min, $y-max)}vh - var(--footer-height));
+
+      left: $x-start;
+      // Reverted to an infinite loop with a new multi-stage keyframe animation.
+      animation: petal-fall $fall-duration linear $fall-delay infinite;
+      
+      --x-end: calc(#{$x-start} + #{$x-end-drift});
+      --y-end: #{$y-end};
+      --rotation: #{$rotation};
     }
+  }
+}
+
+// Background petals need to travel "further" down the screen due to perspective.
+.petal-system--bg { @include generate-petals(100, 110, 130); }
+// Foreground petals have a normal landing trajectory.
+.petal-system--fg { @include generate-petals(100, 75, 95); }
 
 @keyframes petal-fall {
-  to {
-    transform: translateY(110vh) translateX(var(--x-end)) rotate(var(--rotation));
-      }
-    }
+  // Petals now fall, rest, and fade out before the animation loops.
+  0% {
+    transform: translateY(-10vh) translateX(0) rotate(0);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(var(--y-end)) translateX(var(--x-end)) rotate(var(--rotation));
+    opacity: 0.7; // Land and rest on the ground.
+  }
+  100% {
+    transform: translateY(var(--y-end)) translateX(var(--x-end)) rotate(var(--rotation));
+    opacity: 0; // Fade out completely before looping.
+  }
+}
 
 
 // =============================================================================
@@ -636,32 +736,20 @@ html, body {
 // On smaller screens, the layout is adjusted and the number of animated
 // elements is reduced to ensure smooth performance.
 @media (max-width: 768px) {
-.scene-info {
-    top: 15px;
-    bottom: auto;
-    left: 15px;
-    right: 15px;
-    width: auto;
-    max-width: 100%;
-  padding: 15px;
-
-    // Add scrollability for shorter viewports
-    max-height: 50vh;
-    overflow-y: auto;
-  
-    h2 { font-size: 1.1em; }
-    p, li { font-size: 0.9em; }
-    ul { padding-left: 25px; }
-}
+  // Hide the info panel entirely on tablets and smaller devices.
+  .scene-info {
+    display: none;
+  }
 
   // Reduce number of birds on mobile for performance.
-  .bird:nth-child(n+10) { display: none; }
-  .petal:nth-child(n+30) { display: none; }
+  .bird:nth-child(n+20) { display: none; } // Reduce to 20 birds
+  .petal:nth-child(n+50) { display: none; } // Reduce to 50 petals per layer
 }
 
 // On very small screens, hide the info panel entirely to prioritize the scene.
 @media (max-width: 480px) {
-  .scene-info {
-    display: none;
-  }
+  // Rule for .scene-info is already covered by the 768px query.
+  // Further reduce elements for performance on the smallest devices.
+  .bird:nth-child(n+10) { display: none; }
+  .petal:nth-child(n+25) { display: none; } // Reduce to 25 petals per layer
 } 
